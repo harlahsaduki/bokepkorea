@@ -2,8 +2,8 @@
 // src/pages/v/[id].astro
 
 import type { APIRoute } from 'astro';
-import { slugify } from './utils/slugify';
-import { getAllVideos, type VideoData } from './utils/data';
+import { slugify } from '../../utils/slugify';
+import { getAllVideos, type VideoData } from '../../utils/data';
 
 let videoMap: Map<string, { title: string; slug: string }>;
 let isDataLoaded = false;
@@ -30,7 +30,7 @@ loadVideoData().catch(error => {
 });
 
 export const GET: APIRoute = async ({ params, redirect, request }) => {
-  const { id } = params; // Dapatkan ID dari URL params
+  const { id } = params;
 
   console.log(`[API Route /v/[id]] Menerima permintaan untuk ID: ${id}`);
 
@@ -43,7 +43,7 @@ export const GET: APIRoute = async ({ params, redirect, request }) => {
     return redirect('/404', 302);
   }
 
-  const videoInfo = videoMap.get(id); // Cari info video
+  const videoInfo = videoMap.get(id);
 
   if (videoInfo) {
     const newPath = `/${videoInfo.slug}-${videoInfo.id}/`;
@@ -54,7 +54,4 @@ export const GET: APIRoute = async ({ params, redirect, request }) => {
     return redirect('/404', 302);
   }
 };
-
-// Anda bisa menambahkan handler untuk metode HTTP lain jika diperlukan (misal: POST)
-// export const POST: APIRoute = async ({ request }) => { ... };
 ---
