@@ -36,29 +36,23 @@ async function getVideoTitleAndSlug(videoId: string): Promise<{ title: string; s
 export const onRequest = defineMiddleware(async (context: APIContext, next) => {
     const { url, request } = context;
 
-    console.log(`[Middleware] Mencegat URL: ${url.pathname}`);
-
     const match = url.pathname.match(/^\/v\/([\w-]+)\/?$/);
 
     if (match) {
         const videoId = match[1];
-        console.log(`[Middleware] URL cocok! ID ditemukan: ${videoId}`);
 
         const videoInfo = await getVideoTitleAndSlug(videoId);
 
         if (videoInfo) {
             const newPath = `/${videoInfo.slug}-${videoInfo.id}/`;
-            console.log(`[Middleware] Video ditemukan. Melakukan REWRITE dari /v/${videoId} ke ${newPath}`);
 
             const rewrittenResponse = await context.rewrite(newPath);
             return rewrittenResponse;
  
         } else {
-            console.warn(`[Middleware] Video dengan ID "${videoId}" tidak ditemukan dalam data getAllVideos. Melanjutkan ke /404.`);
-            return next();
+             return next();
         }
     }
 
-    console.log(`[Middleware] URL ${url.pathname} tidak cocok dengan pola. Melanjutkan.`);
     return next();
 });
