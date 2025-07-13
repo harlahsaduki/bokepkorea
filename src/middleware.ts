@@ -1,6 +1,8 @@
 // src/middleware.ts
 import { defineMiddleware, type APIContext } from 'astro/middleware';
-import slugify from 'slugify';
+
+import { slugify } from './utils/slugify';
+
 import { getAllVideos, type VideoData } from './utils/data';
 
 let videoMap: Map<string, { title: string; slug: string }>;
@@ -11,7 +13,7 @@ async function loadVideoData() {
   const allVideos: VideoData[] = await getAllVideos();
   videoMap = new Map();
   allVideos.forEach(video => {
-    const videoSlug = slugify(video.title, { lower: true, strict: true });
+    const videoSlug = slugify(video.title);
     videoMap.set(video.id, {
       id: video.id,
       title: video.title,
