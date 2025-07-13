@@ -1,14 +1,19 @@
 // src/middleware.ts
 import { defineMiddleware, type APIContext } from 'astro/middleware';
 import { slugify } from '../src/utils/slugify';
+// Import getAllVideos, tapi kita akan ubah panggilannya untuk menerima baseUrl
 import { getAllVideos, type VideoData } from '../src/utils/data';
+
 let videoMap: Map<string, { title: string; slug: string }>;
 let isDataLoaded = false;
+let appBaseUrl: string; // Tambahkan variabel untuk menyimpan base URL
 
 async function loadVideoData() {
   if (isDataLoaded) return;
   console.log('[Middleware] Memulai inisialisasi data video...');
-  const allVideos: VideoData[] = await getAllVideos();
+  // --- PERUBAHAN DI SINI: Teruskan appBaseUrl ke getAllVideos ---
+  const allVideos: VideoData[] = await getAllVideos(appBaseUrl);
+  // -------------------------------------------------------------
   videoMap = new Map();
   allVideos.forEach(video => {
     const videoSlug = slugify(video.title);
@@ -35,6 +40,18 @@ async function getVideoTitleAndSlug(videoId: string): Promise<{ title: string; s
 
 export const onRequest = defineMiddleware(async (context: APIContext, next) => {
   const { url, redirect } = context;
+
+  // --- PERUBAHAN DI SINI: Set appBaseUrl dari context.url.origin ---
+  if (!appBaseUrl) { // Set hanya sekali
+    appBaseUrl = url.origin;
+    console.log(`[Middleware] Base URL aplikasi disetel: ${appBaseUrl}`);
+    // Panggil ulang loadVideoData jika belum dimuat dan appBaseUrl baru disetel
+    if (!isDataLoaded) {
+        await loadVideoData();
+    }
+  }
+  // -----------------------------------------------------------------
+
   console.log(`[Middleware] Mencegat URL: ${url.pathname}`);
 
   const match = url.pathname.match(/^\/v\/([\w-]+)\/?$/);
