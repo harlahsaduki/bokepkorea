@@ -1,0 +1,60 @@
+---
+// src/pages/v/[id].astro
+
+import type { APIRoute } from 'astro';
+import { slugify } from './utils/slugify';
+import { getAllVideos, type VideoData } from './utils/data';
+
+let videoMap: Map<string, { title: string; slug: string }>;
+let isDataLoaded = false;
+
+async function loadVideoData() {
+  if (isDataLoaded) return;
+
+  const allVideos: VideoData[] = await getAllVideos();
+  videoMap = new Map();
+  allVideos.forEach(video => {
+    const videoSlug = slugify(video.title);
+    videoMap.set(video.id, {
+      id: video.id,
+      title: video.title,
+      slug: videoSlug,
+    });
+  });
+  isDataLoaded = true;
+  console.log(`[API Route /v/[id]] Video data loaded: ${videoMap.size} entries.`);
+}
+
+loadVideoData().catch(error => {
+  console.error('[API Route /v/[id]] Failed to load video data at startup:', error);
+});
+
+export const GET: APIRoute = async ({ params, redirect, request }) => {
+  const { id } = params; // Dapatkan ID dari URL params
+
+  console.log(`[API Route /v/[id]] Menerima permintaan untuk ID: ${id}`);
+
+  if (!isDataLoaded) {
+    await loadVideoData();
+  }
+
+  if (!id) {
+    console.warn('[API Route /v/[id]] ID tidak ditemukan dalam parameter.');
+    return redirect('/404', 302);
+  }
+
+  const videoInfo = videoMap.get(id); // Cari info video
+
+  if (videoInfo) {
+    const newPath = `/${videoInfo.slug}-${videoInfo.id}/`;
+    console.log(`[API Route /v/[id]] Video ditemukan. Redirecting dari /v/${id} ke ${newPath}`);
+    return redirect(newPath, 301);
+  } else {
+    console.warn(`[API Route /v/[id]] Video dengan ID "${id}" tidak ditemukan dalam data.`);
+    return redirect('/404', 302);
+  }
+};
+
+// Anda bisa menambahkan handler untuk metode HTTP lain jika diperlukan (misal: POST)
+// export const POST: APIRoute = async ({ request }) => { ... };
+---
