@@ -1,4 +1,5 @@
 // src/utils/data.ts
+
 export interface VideoData {
   id: string;
   title: string;
@@ -15,25 +16,30 @@ export interface VideoData {
   duration?: string;
 }
 
-const VIDEOS_JSON_URL = '/videos.json';
-
+// Tidak perlu VIDEOS_JSON_URL statis di sini lagi, akan dikirim dari pemanggil
 let cachedVideos: VideoData[] | null = null;
 
-export async function getAllVideos(): Promise<VideoData[]> {
+// --- PERUBAHAN DI SINI: Menerima baseUrl sebagai argumen ---
+export async function getAllVideos(baseUrl: string): Promise<VideoData[]> {
+// -----------------------------------------------------------
   if (cachedVideos) {
     console.log('[getAllVideos] Menggunakan data dari cache.');
     return cachedVideos;
   }
 
-  console.log(`[getAllVideos] Mengambil data dari: ${VIDEOS_JSON_URL}`);
+  // --- PERUBAHAN DI SINI: Buat URL absolut ---
+  const absoluteUrl = `${baseUrl}/videos.json`; // SESUAIKAN PATH KE videos.json jika berbeda
+  // ------------------------------------------
+
+  console.log(`[getAllVideos] Mengambil data dari: ${absoluteUrl}`);
   let videosData: VideoData[] = [];
 
   try {
-    const response = await globalThis.fetch(VIDEOS_JSON_URL);
+    const response = await globalThis.fetch(absoluteUrl);
     if (!response.ok) {
       throw new Error(`Gagal mengambil data video: ${response.statusText} (${response.status})`);
     }
-    videosData = await response.json() as VideoData[]; // Isi videosData dari hasil fetch
+    videosData = await response.json() as VideoData[];
     cachedVideos = videosData;
     console.log(`[getAllVideos] Data video berhasil diambil dan di-cache. Total video: ${videosData.length}`);
   } catch (error) {
