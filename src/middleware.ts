@@ -1,6 +1,6 @@
 // src/middleware.ts
 import { defineMiddleware, type APIContext } from 'astro/middleware';
-import slugify from './utils/slugify';
+import slugify from 'slugify';
 import { getAllVideos, type VideoData } from './utils/data';
 
 let videoMap: Map<string, { title: string; slug: string }>;
